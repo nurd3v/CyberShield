@@ -25,6 +25,7 @@ async function main() {
         bidStatus:        item.BidStatus,
         subsidiesOwedSum: BigInt(item.SubsidiesOwedSum ?? 0),
         sendDate:         new Date(item.SendDate),
+        subsidiesName:    item.SubsidiesName ?? "",
       })),
       skipDuplicates: true,
     });

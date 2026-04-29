@@ -14,4 +14,5 @@ model Application {
   bidStatus        String
   subsidiesOwedSum BigInt
   sendDate         DateTime
+  subsidiesName    String   @default("")
 }
