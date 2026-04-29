@@ -1,6 +1,10 @@
-import { prisma } from "../lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const prisma = new PrismaClient();
 
 const filePath = path.join(process.cwd(), "data", "all_data.json");
 const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -15,7 +19,7 @@ async function main() {
     const batch = data.slice(i, i + BATCH_SIZE);
 
     await prisma.application.createMany({
-      data: batch.map((item: any) => ({
+      data: batch.map((item) => ({
         enterprise:       item.Enterprise,
         state:            item.State,
         bidStatus:        item.BidStatus,
