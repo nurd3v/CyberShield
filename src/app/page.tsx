@@ -1,65 +1,181 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+
+export default function Dashboard() {
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard")
+      .then((res) => res.json())
+      .then(setData);
+  }, []);
+
+  if (!data) {
+    return <div className="p-10 text-gray-500">Loading...</div>;
+  }
+
+  const stats = [
+    {
+      title: "Одобрено",
+      value: data.stats.approved,
+      color: "bg-green-500",
+    },
+    {
+      title: "На проверке",
+      value: data.stats.pending,
+      color: "bg-yellow-500",
+    },
+    {
+      title: "Отклонено",
+      value: data.stats.rejected,
+      color: "bg-red-500",
+    },
+    {
+      title: "Бюджет",
+      value: (data.stats.budget / 1000000000).toFixed(1) + " млрд ₸",
+      color: "bg-blue-500",
+    },
+  ];
+
+  const companies = data.companies.map((c: any) => [
+    c.name,
+    (c.amount / 1000000).toFixed(1) + " млн ₸",
+    c.risk,
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#f5f7fb]">
+      {/* header */}
+      <header className="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between">
+        <h1 className="text-[20px] font-semibold text-gray-900">
+          Subsidy Analytics
+        </h1>
+
+        <div className="flex items-center gap-3">
+          <input
+            placeholder="Поиск..."
+            className="w-72 h-10 px-4 border border-gray-200 rounded-lg outline-none text-sm bg-white"
+          />
+          <button className="h-10 px-4 rounded-lg border border-gray-200 bg-white text-sm">
+            Экспорт
+          </button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </header>
+
+      <div className="flex">
+        {/* sidebar */}
+        <aside className="w-64 min-h-[calc(100vh-64px)] bg-white border-r border-gray-200 p-5">
+          <nav className="space-y-1">
+            {[
+              "Обзор",
+              "Компании",
+              "Проверки",
+              "Регионы",
+              "Аналитика",
+              "Настройки",
+            ].map((item, i) => (
+              <div
+                key={item}
+                className={`px-4 py-3 rounded-lg text-sm cursor-pointer ${
+                  i === 0
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {item}
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* content */}
+        <main className="flex-1 p-6">
+          {/* cards */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            {stats.map((item) => (
+              <div
+                key={item.title}
+                className="bg-white border border-gray-200 rounded-xl p-5"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm text-gray-500">{item.title}</span>
+                  <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                </div>
+
+                <div className="text-2xl font-semibold text-gray-900">
+                  {item.value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            {/* chart */}
+            <div className="col-span-2 bg-white border border-gray-200 rounded-xl p-5">
+              <h2 className="text-sm font-medium text-gray-900 mb-6">
+                Расход бюджета по месяцам
+              </h2>
+
+              <div className="h-72 flex items-end gap-5">
+                {[45, 60, 55, 80, 70, 95, 85].map((v, i) => (
+                  <div key={i} className="flex-1">
+                    <div
+                      className="bg-blue-500 rounded-t-md"
+                      style={{ height: `${v}%` }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* right */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5">
+              <h2 className="text-sm font-medium text-gray-900 mb-5">
+                Использование бюджета
+              </h2>
+
+              <div className="text-3xl font-semibold mb-4">68%</div>
+
+              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-[68%] h-full bg-blue-500" />
+              </div>
+
+              <p className="text-sm text-gray-500 mt-3">
+                {(data.stats.budget / 1000000000).toFixed(1)} млрд ₸ из{" "}
+                {(data.stats.budget / 1000000000).toFixed(1)} млрд ₸
+              </p>
+            </div>
+          </div>
+
+          {/* table */}
+          <div className="mt-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-200 font-medium">
+              Последние заявки
+            </div>
+
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-left text-gray-500">
+                <tr>
+                  <th className="px-5 py-3">Компания</th>
+                  <th className="px-5 py-3">Сумма</th>
+                  <th className="px-5 py-3">Риск</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {companies.map((row: any, i: number) => (
+                  <tr key={i} className="border-t border-gray-100">
+                    <td className="px-5 py-4">{row[0]}</td>
+                    <td className="px-5 py-4">{row[1]}</td>
+                    <td className="px-5 py-4">{row[2]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
